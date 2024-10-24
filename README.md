@@ -1,13 +1,4 @@
-## Egg's Adventure Landing Page
-### Overview
-
-Lading Page repository of Egg's Adventure, this project it's built with React, TypeScript, and Tailwind CSS.
-
-### Technologies
-
-- **React**
-- **TypeScript**
-- **Tailwind CSS**
+## Demo Project
 
 ### Initialization Steps
 
