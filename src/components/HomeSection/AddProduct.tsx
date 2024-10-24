@@ -42,20 +42,19 @@ export default function AddProduct() {
     try {
       const newProduct: Product = {
         ...data,
-        id: '', // This will be assigned by the server
+        id: '', 
         publicationDate: new Date().toISOString(),
         comments: [],
         likes: 0,
-        sellerId: '', // This should be set to the current user's ID in a real application
+        sellerId: '', 
       }
       const createdProduct = await createProduct(newProduct)
       console.log('Product created:', createdProduct)
       form.reset()
       setIsDialogOpen(false)
-      // You might want to refresh the product list or show a success message here
+
     } catch (error) {
       console.error('Failed to create product:', error)
-      // You might want to show an error message to the user here
     }
   }
 
