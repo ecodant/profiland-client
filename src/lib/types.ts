@@ -52,6 +52,7 @@ export const SellerSchema = z.object({
   lastName: z.string().nonempty(),
   license: z.string().optional(),  
   address: z.string().optional(),
+  profileImg: z.string().optional(),
 
   // Sets from Java can be modeled as arrays in TypeScript
   reviews: z.array(z.string()).optional().default([]),
