@@ -1,11 +1,11 @@
-import { Bell, FileText, LogOut, MessageSquare, User } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Bell, FileText, LogOut, MessageSquare, User } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from "@/components/ui/dropdown-menu";
 
 export default function Navbar() {
   return (
@@ -52,7 +52,12 @@ export default function Navbar() {
                 <DropdownMenuItem asChild>
                   <a href="/profile">Profile</a>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    localStorage.removeItem("loggedInSeller");
+                    window.location.reload();
+                  }}
+                >
                   <LogOut className="h-4 w-4 mr-2" />
                   Log out
                 </DropdownMenuItem>
@@ -62,5 +67,5 @@ export default function Navbar() {
         </div>
       </div>
     </nav>
-  )
+  );
 }

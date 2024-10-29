@@ -1,32 +1,30 @@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TabsContent } from "@radix-ui/react-tabs";
 import { Product, ProductInput, Seller, Comment } from "@/lib/types";
-import AvailableProductContent from "./products/AvailableProductSection";
 import { ProductsContext } from "../context/context";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   createProduct,
   getAllProducts,
   updateProduct,
   deleteProduct,
 } from "@/services/productService";
+import SellerProductsSection from "./products/SellerProductsSection";
+import { useSellers } from "../customHooks/hooks";
 
 interface TabProps {
-  seller: Seller | null;
   activeTab: string;
   setActiveTab: (tab: string) => void;
 }
 
-export default function ContentSection({
-  activeTab,
-  setActiveTab,
-  seller,
-}: TabProps) {
+export default function ContentSection({ activeTab, setActiveTab }: TabProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   // const [newComment, setNewComment] = useState('')
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const { sessionSeller } = useSellers();
 
   useEffect(() => {
     fetchProducts();
@@ -35,7 +33,10 @@ export default function ContentSection({
   const fetchProducts = async () => {
     try {
       const fetchedProducts = await getAllProducts();
-      setProducts(fetchedProducts);
+      const currentUserProducts = fetchedProducts.filter(
+        (p) => p.sellerId === sessionSeller.id
+      );
+      setProducts(currentUserProducts);
     } catch (error) {
       console.error("Failed to fetch products:", error);
     }
@@ -64,15 +65,13 @@ export default function ContentSection({
         publicationDate: new Date().toISOString(),
         comments: [],
         likes: 0,
-        sellerId: seller != null ? seller.id : "",
+        sellerId: sessionSeller != null ? sessionSeller.id : "",
       };
       const createdProduct = await createProduct(newProduct);
       setProducts([...products, createdProduct]);
 
-      console.log("Product created:", createdProduct);
-      // form.reset()
+      // console.log("Product created:", createdProduct);
       setIsDialogOpen(false);
-      // You might want to refresh the product list or show a success message here
     } catch (error) {
       console.error("Failed to create product:", error);
     }
@@ -110,7 +109,7 @@ export default function ContentSection({
     const newCommentObj: Comment = {
       id: Date.now().toString(), // Generate a temporary ID
       date: new Date().toISOString(),
-      author: "Current User", // Replace with actual user name or ID
+      author: sessionSeller.name + " " + sessionSeller.lastName, // Replace with actual user name or ID
       content: comment.trim(),
     };
 
@@ -135,9 +134,8 @@ export default function ContentSection({
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <TabsList className="grid w-full grid-cols-3">
-        <TabsTrigger value="add">Add Products</TabsTrigger>
-        <TabsTrigger value="published">Published Products</TabsTrigger>
+      <TabsList className="grid w-full grid-cols-2">
+        <TabsTrigger value="add">Your Products</TabsTrigger>
         <TabsTrigger value="friends">Friends' Products</TabsTrigger>
       </TabsList>
 
@@ -145,7 +143,6 @@ export default function ContentSection({
         <ProductsContext.Provider
           value={{
             products,
-            // fetchProducts,
             addProduct,
             handleUpdateProduct,
             handleDeleteProduct,
@@ -154,12 +151,8 @@ export default function ContentSection({
           }}
         >
           {/* <AddProduct seller={seller} /> */}
-          <AvailableProductContent />
+          <SellerProductsSection />
         </ProductsContext.Provider>
-      </TabsContent>
-
-      <TabsContent value="published">
-        <div>Here are your published products.</div>
       </TabsContent>
 
       <TabsContent value="friends">

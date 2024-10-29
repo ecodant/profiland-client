@@ -1,9 +1,15 @@
-import { Product, ProductInput, Seller } from "@/lib/types";
+import {
+  LoginFormValues,
+  Product,
+  ProductInput,
+  Review,
+  Seller,
+} from "@/lib/types";
 import { createContext } from "react";
 
-export const SellerSessionContext = createContext<Seller | undefined>(
-  undefined
-);
+// export const SellerSessionContext = createContext<Seller | undefined>(
+//   undefined
+// );
 
 export interface ProductsContextType {
   products: Product[];
@@ -19,5 +25,16 @@ export interface ProductsContextType {
 }
 
 export const ProductsContext = createContext<ProductsContextType | undefined>(
+  undefined
+);
+
+export interface UserContextType {
+  sessionSeller: Seller;
+  sellers: Seller[];
+  addReview: (sellerID: string, review: Review) => Promise<void>;
+  handleLoginSeller: (credentials: LoginFormValues) => Promise<Seller>;
+}
+
+export const SellerContext = createContext<UserContextType | undefined>(
   undefined
 );
