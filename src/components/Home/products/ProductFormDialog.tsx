@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Product, ProductInput, productInputSchema } from "@/lib/types";
-import { useProducts } from "@/components/customHooks/hooks";
 import {
   Select,
   SelectContent,
@@ -26,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useProducts } from "@/hooks/hooks";
 
 type ProductFormDialogProps = {
   product?: Product | null;

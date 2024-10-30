@@ -1,5 +1,5 @@
+import { useSellers } from "@/hooks/hooks";
 import FriendCard from "./FriendCard";
-import { useSellers } from "../customHooks/hooks";
 
 export default function FriendSuggestions() {
   const handleSendRequest = (userId: string) => {

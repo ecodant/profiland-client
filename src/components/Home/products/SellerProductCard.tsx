@@ -15,12 +15,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreVertical, Heart, MessageCircle } from "lucide-react";
 import { Product } from "@/lib/types";
-import { useProducts } from "@/components/customHooks/hooks";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import ProductFormDialog from "./ProductFormDialog";
+import { useProducts } from "@/hooks/hooks";
 
 interface ProductProps {
   product: Product;

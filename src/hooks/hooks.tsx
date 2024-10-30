@@ -4,7 +4,7 @@ import {
   ProductsContextType,
   SellerContext,
   UserContextType,
-} from "../context/context";
+} from "@/components/context/context";
 
 export const useProducts = (): ProductsContextType => {
   const context = useContext(ProductsContext);

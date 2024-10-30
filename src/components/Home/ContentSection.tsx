@@ -9,8 +9,8 @@ import {
   updateProduct,
   deleteProduct,
 } from "@/services/productService";
+import { useSellers } from "@/hooks/hooks";
 import SellerProductsSection from "./products/SellerProductsSection";
-import { useSellers } from "../customHooks/hooks";
 
 interface TabProps {
   activeTab: string;

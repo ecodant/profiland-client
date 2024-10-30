@@ -30,7 +30,7 @@ import { ToastAction } from "@/components/ui/toast";
 import { useToast } from "@/hooks/use-toast";
 import { registerSeller } from "@/services/sellerService";
 import { AxiosError } from "axios";
-import { useSellers } from "../customHooks/hooks";
+import { useSellers } from "@/hooks/hooks";
 
 // interface AuthPageProps {
 
@@ -105,7 +105,7 @@ export default function AuthPage() {
           address: data.address,
           profileImg: "",
           reviews: [],
-          contacts: [],
+          contacts: [data.personalId],
           products: [],
           stats: [],
           chats: [],

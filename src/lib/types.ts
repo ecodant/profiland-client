@@ -78,13 +78,11 @@ export type Review = z.infer<typeof ReviewSchema>;
 
 //For Login and Sign Up Section
 
-// Zod schema for login form
 export const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
-// Zod schema for sign up form
 export const signUpSchema = z
   .object({
     personalId: z.string().min(1, "Personal ID is required"),
@@ -107,3 +105,12 @@ export const signUpSchema = z
 
 export type LoginFormValues = z.infer<typeof loginSchema>;
 export type SignUpFormValues = z.infer<typeof signUpSchema>;
+
+// Contact requests for Sellers
+export const ContactSchema = z.object({
+  id: z.string(),
+  idEmisor: z.string(),
+  idReciver: z.string(),
+  state: z.string(),
+});
+export type ContactRequest = z.infer<typeof ContactSchema>;

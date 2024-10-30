@@ -1,9 +1,9 @@
 import { useState } from "react";
 import ProductFormDialog from "./ProductFormDialog";
-import { useProducts } from "@/components/customHooks/hooks";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SellerProductCard from "./SellerProductCard";
+import { useProducts } from "@/hooks/hooks";
 
 export default function SellerProductSection() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);

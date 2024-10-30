@@ -1,4 +1,5 @@
 import {
+  ContactRequest,
   LoginFormValues,
   Product,
   ProductInput,
@@ -33,6 +34,9 @@ export interface UserContextType {
   sellers: Seller[];
   addReview: (sellerID: string, review: Review) => Promise<void>;
   handleLoginSeller: (credentials: LoginFormValues) => Promise<Seller>;
+  sendRequestSeller: (idReciver: string) => Promise<boolean>;
+  acceptRuquestSeller: (idRequest: string) => Promise<boolean>;
+  rejectRequestSeller: (idRequest: string) => Promise<boolean>;
 }
 
 export const SellerContext = createContext<UserContextType | undefined>(
