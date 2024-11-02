@@ -1,7 +1,6 @@
 import { z } from "zod";
 
 const CommentSchema = z.object({
-  id: z.string(),
   date: z.string(),
   author: z.string(),
   content: z.string(),
@@ -18,7 +17,6 @@ export const ProductSchema = z.object({
   publicationDate: z.string(),
   comments: z.array(CommentSchema),
   likes: z.number(),
-  sellerId: z.string(),
 });
 
 export const productInputSchema = z.object({
@@ -35,11 +33,29 @@ export type Comment = z.infer<typeof CommentSchema>;
 export type ProductInput = z.infer<typeof productInputSchema>;
 
 // User Models Section
+export const ContactSchema = z.object({
+  id: z.string(),
+  idEmisor: z.string(),
+  state: z.string(),
+});
+
+const ChatMessageSchema = z.object({
+  id: z.string(),
+  senderId: z.string(),
+  receiverId: z.string(),
+  content: z.string(),
+  timestamp: z.string(),
+});
+
+const ChatSchema = z.object({
+  chatRoomId: z.string(),
+  user1Id: z.string(),
+  user2Id: z.string(),
+  comments: z.array(ChatMessageSchema),
+});
 
 const ReviewSchema = z.object({
-  id: z.string(),
   authorRef: z.string(),
-  ownerRef: z.string(),
   comment: z.string(),
   calification: z.number().min(0).max(5),
 });
@@ -50,6 +66,11 @@ const WallSchema = z.object({
   postsReferences: z.array(z.string()).optional(),
 });
 
+const SellerNotificationSchema = z.object({
+  id: z.string(),
+  message: z.string(),
+  typeOfNotification: z.string(),
+});
 // Seller schema
 export const SellerSchema = z.object({
   id: z.string(),
@@ -64,18 +85,21 @@ export const SellerSchema = z.object({
   // Sets from Java can be modeled as arrays in TypeScript
   reviews: z.array(ReviewSchema),
   contacts: z.array(z.string()).optional().default([]),
-  products: z.array(z.string()).optional().default([]),
-  stats: z.array(z.string()).optional().default([]),
-  chats: z.array(z.string()).optional().default([]),
-  contactRequests: z.array(z.string()).optional().default([]),
-
-  wall: WallSchema.optional(),
+  notifications: z.array(SellerNotificationSchema),
+  products: z.array(ProductSchema),
+  // stats: z.array(z.string()).optional().default([]),
+  chats: z.array(ChatSchema),
+  contactRequests: z.array(ContactSchema),
 });
 
 export type Seller = z.infer<typeof SellerSchema>;
 export type Wall = z.infer<typeof WallSchema>;
 export type Review = z.infer<typeof ReviewSchema>;
 
+export type ContactRequest = z.infer<typeof ContactSchema>;
+export type Chat = z.infer<typeof ChatSchema>;
+export type ChatMessage = z.infer<typeof ChatMessageSchema>;
+export type SellerNotification = z.infer<typeof SellerNotificationSchema>;
 //For Login and Sign Up Section
 
 export const loginSchema = z.object({
@@ -105,12 +129,3 @@ export const signUpSchema = z
 
 export type LoginFormValues = z.infer<typeof loginSchema>;
 export type SignUpFormValues = z.infer<typeof signUpSchema>;
-
-// Contact requests for Sellers
-export const ContactSchema = z.object({
-  id: z.string(),
-  idEmisor: z.string(),
-  idReciver: z.string(),
-  state: z.string(),
-});
-export type ContactRequest = z.infer<typeof ContactSchema>;

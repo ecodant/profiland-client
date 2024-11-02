@@ -11,7 +11,6 @@ interface FriendCardProps {
 }
 
 export default function FriendCard({ seller, onSendRequest }: FriendCardProps) {
-  const { sendRequestSeller } = useSellers();
   return (
     <Card key={seller.id} className="overflow-hidden w-80">
       <CardContent className="p-4">
@@ -35,7 +34,7 @@ export default function FriendCard({ seller, onSendRequest }: FriendCardProps) {
             </div>
           </a>
           <Button
-            onClick={() => sendRequestSeller(seller.id)}
+            onClick={() => onSendRequest(seller.id)}
             size="sm"
             className="ml-4"
           >

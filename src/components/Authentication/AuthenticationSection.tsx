@@ -106,15 +106,10 @@ export default function AuthPage() {
           profileImg: "",
           reviews: [],
           contacts: [data.personalId],
+          notifications: [],
           products: [],
-          stats: [],
           chats: [],
           contactRequests: [],
-          wall: {
-            id: data.personalId,
-            idOwnerSeller: data.personalId,
-            postsReferences: [],
-          },
         },
         "xml"
       );

@@ -40,13 +40,10 @@ export async function getSellersByName(name: string): Promise<Seller[]> {
 
 export async function updateSeller(
   id: string,
-  sellerData: Partial<Omit<Seller, "id">>,
-  format: string = "dat"
+  sellerData: Seller
 ): Promise<Seller> {
-  const response = await api.put(`/profiland/sellers/${id}`, sellerData, {
-    params: { format },
-  });
-  return SellerSchema.parse(response.data);
+  const response = await api.put(`/profiland/sellers/${id}`, sellerData);
+  return response.data;
 }
 
 export async function deleteSeller(id: string): Promise<string> {

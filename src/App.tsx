@@ -2,24 +2,19 @@ import AuthenticationSection from "./components/Authentication/AuthenticationSec
 import { Toaster } from "@/components/ui/toaster";
 import Home from "./components/Home/Home";
 import { useCallback, useEffect, useState } from "react";
-import { ContactRequest, LoginFormValues, Review, Seller } from "./lib/types";
+
+import { SellerContext } from "./components/context/context";
+
+import { LoginFormValues, Seller } from "./lib/types";
 import {
   getAllSellers,
   loginSeller,
   updateSeller,
 } from "./services/sellerService";
-import { SellerContext } from "./components/context/context";
 import { dummySeller } from "./lib/localSession";
-
-import {
-  acceptRequest,
-  createRequest,
-  rejectRequest,
-} from "./services/contactRequestService";
 
 export default function App() {
   const [sessionSeller, setSessionSeller] = useState<Seller>(dummySeller);
-
   const [sellers, setSellers] = useState<Seller[]>([]);
 
   const fetchSellers = useCallback(async () => {
@@ -28,51 +23,27 @@ export default function App() {
       setSellers(
         fetchedSellers.filter((seller) => seller.id !== sessionSeller.id)
       );
-      console.log(sellers);
     } catch (error) {
       console.error("Failed to fetch sellers: ", error);
     }
   }, [sessionSeller.id]);
 
-  useEffect(() => {
-    const valueStore = localStorage.getItem("loggedInSeller");
-    if (valueStore != null) {
-      const sellerStore: Seller = JSON.parse(valueStore);
-      setSessionSeller(sellerStore);
-    }
-    fetchSellers();
-  }, []);
-
-  const sendRequestSeller = async (idReciver: string): Promise<boolean> => {
+  const handleUpdateSeller = async (
+    sellerToUpdate: Seller
+  ): Promise<Seller> => {
     try {
-      const newContactRequest: ContactRequest = {
-        id: Date.now().toString(), // Generate a temporary ID
-        idEmisor: sessionSeller.id,
-        idReciver: idReciver,
-        state: "ON_HOLD",
-      };
-      return await createRequest(newContactRequest);
+      const sellerUpdated = await updateSeller(
+        sellerToUpdate.id,
+        sellerToUpdate
+      );
+      if (sellerUpdated) {
+        setSessionSeller(sellerUpdated);
+        return sellerUpdated;
+      }
     } catch (error) {
       console.error("Error sending the request:", error);
-      return false;
     }
-  };
-
-  const rejectRequestSeller = async (idRequest: string): Promise<boolean> => {
-    try {
-      return await rejectRequest(idRequest);
-    } catch (error) {
-      console.error("Error rejecting the request:", error);
-      return false;
-    }
-  };
-  const acceptRuquestSeller = async (idRequest: string): Promise<boolean> => {
-    try {
-      return await acceptRequest(idRequest);
-    } catch (error) {
-      console.error("Error rejecting the request:", error);
-      return false;
-    }
+    return dummySeller;
   };
 
   const handleLoginSeller = async (data: LoginFormValues): Promise<Seller> => {
@@ -91,43 +62,47 @@ export default function App() {
     return sessionSeller;
   };
 
-  const addReview = async (sellerId: string, review: Review) => {
-    const sellerToUpdate = sellers.find((s) => s.id === sellerId);
-    if (!sellerToUpdate) return;
+  useEffect(() => {
+    const initializeSession = async () => {
+      const valueStore = localStorage.getItem("loggedInSeller");
 
-    const updatedReviews = [...sellerToUpdate.reviews, review];
-    try {
-      const updatedSeller = await updateSeller(sellerId, {
-        ...sellerToUpdate,
-        reviews: updatedReviews,
-      });
+      if (valueStore) {
+        try {
+          const sellerStore: Seller = JSON.parse(valueStore);
 
-      // Update both sellers list and session seller if needed
-      setSellers((prevSellers) =>
-        prevSellers.map((s) => (s.id === sellerId ? updatedSeller : s))
-      );
-
-      if (sellerId === sessionSeller.id) {
-        setSessionSeller(updatedSeller);
-        localStorage.setItem("loggedInSeller", JSON.stringify(updatedSeller));
+          if (sellerStore.email && sellerStore.password) {
+            const sellerReLogged = await handleLoginSeller({
+              email: sellerStore.email,
+              password: sellerStore.password,
+            });
+            if (sellerReLogged) {
+              setSessionSeller(sellerReLogged);
+            }
+          } else {
+            console.warn("Invalid session data, logging out...");
+            localStorage.removeItem("loggedInSeller");
+          }
+        } catch (error) {
+          console.error("Error re-authenticating:", error);
+          localStorage.removeItem("loggedInSeller");
+        }
       }
-    } catch (error) {
-      console.error("Failed to add review:", error);
-      throw error;
-    }
-  };
+      await fetchSellers();
+    };
+
+    initializeSession();
+  }, [fetchSellers]);
 
   return (
     <div className="w-full overflow-x-hidden">
       <SellerContext.Provider
         value={{
           sessionSeller,
+          setSessionSeller,
+          setSellers,
           sellers,
-          addReview,
+          handleUpdateSeller,
           handleLoginSeller,
-          sendRequestSeller,
-          rejectRequestSeller,
-          acceptRuquestSeller,
         }}
       >
         <Toaster />

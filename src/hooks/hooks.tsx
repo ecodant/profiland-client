@@ -1,18 +1,13 @@
 import { useContext } from "react";
-import {
-  ProductsContext,
-  ProductsContextType,
-  SellerContext,
-  UserContextType,
-} from "@/components/context/context";
+import { SellerContext, UserContextType } from "@/components/context/context";
 
-export const useProducts = (): ProductsContextType => {
-  const context = useContext(ProductsContext);
-  if (context === undefined) {
-    throw new Error("useProducts must be used within a ProductsProvider");
-  }
-  return context;
-};
+// export const useProducts = (): ProductsContextType => {
+//   const context = useContext(ProductsContext);
+//   if (context === undefined) {
+//     throw new Error("useProducts must be used within a ProductsProvider");
+//   }
+//   return context;
+// };
 
 export const useSellers = (): UserContextType => {
   const context = useContext(SellerContext);

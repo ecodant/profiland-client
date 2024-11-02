@@ -1,4 +1,4 @@
-// ProductFormDialog.tsx
+import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -7,7 +7,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -16,8 +15,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Product, ProductInput, productInputSchema } from "@/lib/types";
+import { Button } from "@/components/ui/button";
+import { useSellers } from "@/hooks/hooks";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -25,13 +26,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useProducts } from "@/hooks/hooks";
 
 type ProductFormDialogProps = {
   product?: Product | null;
   isDialogOpen: boolean;
   setIsDialogOpen: (open: boolean) => void;
   setProductToEdit?: React.Dispatch<React.SetStateAction<Product | null>>;
+  onSubmitSuccess?: () => void;
 };
 
 export default function ProductFormDialog({
@@ -39,14 +40,22 @@ export default function ProductFormDialog({
   isDialogOpen,
   setIsDialogOpen,
   setProductToEdit,
+  onSubmitSuccess,
 }: ProductFormDialogProps) {
   const isEditing = !!product;
-  const { handleUpdateProduct, addProduct } = useProducts();
+  const { sessionSeller, handleUpdateSeller, setSessionSeller } = useSellers();
 
   const form = useForm<ProductInput>({
     resolver: zodResolver(productInputSchema),
     defaultValues: isEditing
-      ? { ...product }
+      ? {
+          name: product.name,
+          code: product.code,
+          image: product.image,
+          category: product.category,
+          price: product.price,
+          state: product.state,
+        }
       : {
           name: "",
           code: "",
@@ -57,17 +66,75 @@ export default function ProductFormDialog({
         },
   });
 
-  const handleSubmit = (data: ProductInput) => {
-    if (isEditing) {
-      handleUpdateProduct({ ...product, ...data });
-      if (setProductToEdit) setProductToEdit(null);
-    } else {
-      addProduct(data);
+  const handleSubmit = async (data: ProductInput) => {
+    if (!sessionSeller) {
+      console.error("No session seller found");
+      return;
     }
-    setIsDialogOpen(false);
-    form.reset();
+
+    let updatedProducts: Product[];
+
+    if (isEditing && product) {
+      // Update existing product
+      updatedProducts = sessionSeller.products.map((item) =>
+        item.id === product.id
+          ? {
+              ...product,
+              ...data,
+              // Preserve the original fields that aren't in the form
+              id: product.id,
+              publicationDate: product.publicationDate,
+              comments: product.comments,
+              likes: product.likes,
+            }
+          : item
+      );
+    } else {
+      // Create new product
+      const newProduct: Product = {
+        ...data,
+        id: crypto.randomUUID(),
+        publicationDate: new Date().toISOString(),
+        comments: [],
+        likes: 0,
+      };
+
+      updatedProducts = [...sessionSeller.products, newProduct];
+    }
+
+    // Create updated seller object
+    const updatedSeller = {
+      ...sessionSeller,
+      products: updatedProducts,
+    };
+
+    try {
+      // Update the seller data
+      await handleUpdateSeller(updatedSeller);
+
+      // Update local state only after successful API call
+      setSessionSeller(updatedSeller);
+
+      // Reset form and close dialog
+      form.reset();
+      setIsDialogOpen(false);
+
+      // Clear product being edited if applicable
+      if (setProductToEdit) {
+        setProductToEdit(null);
+      }
+
+      // Call success callback if provided
+      if (onSubmitSuccess) {
+        onSubmitSuccess();
+      }
+    } catch (error) {
+      console.error("Failed to update seller:", error);
+      // Here you might want to show an error message to the user
+    }
   };
 
+  // Rest of your component remains the same...
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogContent className="sm:max-w-[425px]">
