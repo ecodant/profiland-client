@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Heart, MessageCircle } from "lucide-react";
-import { Product, Comment } from "@/lib/types";
+import { Product, Comment, Seller, Review } from "@/lib/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +22,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import SellerReviewDialog from "../review/SellerReviewDialog";
 
 interface FriendProductProps {
   product: Product;
@@ -33,6 +34,9 @@ export default function FriendProductCard({ product }: FriendProductProps) {
   const [displayComments, setDisplayComments] = useState<{
     [key: string]: boolean;
   }>({});
+
+  const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
+  const [ownerSeller, setOwnerSeller] = useState<Seller | null>(null);
   const { sessionSeller, handleUpdateSeller, setSellers, sellers } =
     useSellers();
 
@@ -47,7 +51,6 @@ export default function FriendProductCard({ product }: FriendProductProps) {
     const ownerSeller = sellers.find(
       (seller) => seller.id === product.sellerId
     );
-
     if (!ownerSeller) return;
 
     try {
@@ -120,14 +123,53 @@ export default function FriendProductCard({ product }: FriendProductProps) {
     }
   };
 
-  const handleBuyProduct = () => {
-    // Handle the purchase logic here
-    console.log("Product bought:", product);
-    setIsBuyDialogOpen(false);
+  const handleReviewSubmit = async (review: Review) => {
+    const productOwner = sellers.find(
+      (seller) => seller.id === product.sellerId
+    );
+
+    if (!productOwner) return;
+    const updatedReviews = [...productOwner.reviews, review];
+
+    const updatedProducts = productOwner.products.map((item) =>
+      item.id === product.id
+        ? {
+            ...product,
+            // Preserve the original fields that aren't in the form
+            id: product.id,
+            state: "SOLD",
+            publicationDate: product.publicationDate,
+            comments: product.comments,
+            likes: product.likes,
+            sellerId: product.sellerId,
+          }
+        : item
+    );
+
+    const updatedSeller = {
+      ...productOwner,
+      reviews: updatedReviews,
+      products: updatedProducts,
+    };
+
+    try {
+      await handleUpdateSeller(updatedSeller);
+      setSellers(
+        sellers.map((s) => (s.id === updatedSeller.id ? updatedSeller : s))
+      );
+    } catch (error) {
+      console.error("Failed to sent the review to the seller:", error);
+    }
   };
 
   return (
     <>
+      <SellerReviewDialog
+        isOpen={isReviewDialogOpen}
+        onClose={() => setIsReviewDialogOpen(false)}
+        onSubmitReview={handleReviewSubmit}
+        sellerName={ownerSeller?.name}
+      ></SellerReviewDialog>
       <Card key={product.id} className="flex flex-col w-72">
         <CardHeader>
           <img
@@ -191,7 +233,13 @@ export default function FriendProductCard({ product }: FriendProductProps) {
                 >
                   Cancel
                 </Button>
-                <Button variant="default" onClick={handleBuyProduct}>
+                <Button
+                  variant="default"
+                  onClick={() => {
+                    setIsBuyDialogOpen(false);
+                    setIsReviewDialogOpen(true);
+                  }}
+                >
                   Confirm
                 </Button>
               </DialogFooter>
