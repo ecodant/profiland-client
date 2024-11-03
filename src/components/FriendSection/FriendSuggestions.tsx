@@ -75,7 +75,7 @@ export default function FriendSuggestions() {
         notifications: [
           ...(receiverSeller.notifications || []),
           newNotification,
-        ], // Notice the fix here
+        ],
       };
 
       // Update suggested sellers list
@@ -98,8 +98,8 @@ export default function FriendSuggestions() {
   };
 
   return (
-    <div className="w-80 max-w-md mx-auto">
-      <h2 className="text-2xl font-bold mb-4">People You May Know</h2>
+    <div className="min-w-96 min-h-64 flex flex-col justify-start p-4 max-w-md mx-auto bg-gray-100 rounded-xl drop-shadow-md">
+      <h2 className="text-2xl font-bold mb-4">Sellers You May Know</h2>
       <div className="space-y-4">
         {sellerstoSuggest.map((seller) => (
           <FriendCard

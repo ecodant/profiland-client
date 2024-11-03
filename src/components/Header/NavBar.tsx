@@ -6,6 +6,7 @@ import {
   User,
   Check,
   X,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +21,26 @@ import { SellerNotification } from "@/lib/types";
 export default function Navbar() {
   const { sessionSeller, handleUpdateSeller, sellers, setSellers } =
     useSellers();
+
+  const handleDeleteNotification = async (notification: SellerNotification) => {
+    try {
+      // Filter out the notification to be deleted
+      const updatedNotifications = sessionSeller.notifications.filter(
+        (n) => n.id !== notification.id
+      );
+
+      // Update the session seller with the new notifications array
+      const updatedSessionSeller = {
+        ...sessionSeller,
+        notifications: updatedNotifications,
+      };
+
+      // Update the session seller in the database
+      await handleUpdateSeller(updatedSessionSeller);
+    } catch (error) {
+      console.error("Error deleting notification:", error);
+    }
+  };
 
   const handleRequestResponse = async (
     accepted: boolean,
@@ -69,9 +90,19 @@ export default function Navbar() {
         );
 
         if (senderSeller) {
+          const newNotification: SellerNotification = {
+            id: senderSeller.id,
+            message: `${sessionSeller.name} has accepted your request, he's in your network now.`,
+            typeOfNotification: "INFO",
+          };
+
           const updatedSenderSeller = {
             ...senderSeller,
             contacts: [...senderSeller.contacts, sessionSeller.id],
+            notifications: [
+              ...(senderSeller.notifications || []),
+              newNotification,
+            ],
           };
 
           // Update the sender in the database
@@ -137,7 +168,7 @@ export default function Navbar() {
                       className="flex items-center justify-between p-4"
                     >
                       <span className="flex-1">{notification.message}</span>
-                      {notification.typeOfNotification === "REQUEST" && (
+                      {notification.typeOfNotification === "REQUEST" ? (
                         <div className="flex gap-2 ml-2">
                           <Button
                             size="sm"
@@ -160,6 +191,15 @@ export default function Navbar() {
                             <X className="h-4 w-4 text-red-600" />
                           </Button>
                         </div>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 w-8 p-0 hover:bg-gray-100"
+                          onClick={() => handleDeleteNotification(notification)}
+                        >
+                          <Trash2 className="h-4 w-4 text-gray-600" />
+                        </Button>
                       )}
                     </DropdownMenuItem>
                   ))
@@ -170,7 +210,6 @@ export default function Navbar() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon">
                   <User className="h-5 w-5" />
-
                   <span className="sr-only">User menu</span>
                 </Button>
               </DropdownMenuTrigger>

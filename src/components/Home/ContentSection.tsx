@@ -39,7 +39,11 @@ export default function ContentSection({ activeTab, setActiveTab }: TabProps) {
   }, [sessionSeller, sellers, sortOrder]);
 
   return (
-    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+    <Tabs
+      value={activeTab}
+      onValueChange={setActiveTab}
+      className="w-full mt-4"
+    >
       <TabsList className="grid w-full grid-cols-2">
         <TabsTrigger value="add">Your Products</TabsTrigger>
         <TabsTrigger value="friends">Friends' Products</TabsTrigger>

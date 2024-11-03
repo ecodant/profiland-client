@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -34,11 +34,17 @@ export default function FriendProductCard({ product }: FriendProductProps) {
   const [displayComments, setDisplayComments] = useState<{
     [key: string]: boolean;
   }>({});
-
   const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
-  const [ownerSeller, setOwnerSeller] = useState<Seller | null>(null);
+  const [owner, setOwnerSeller] = useState<Seller | null>(null);
   const { sessionSeller, handleUpdateSeller, setSellers, sellers } =
     useSellers();
+
+  useEffect(() => {
+    const productOwner = sellers.find(
+      (seller) => seller.id === product.sellerId
+    );
+    if (productOwner) setOwnerSeller(productOwner);
+  }, [product.sellerId, sellers]);
 
   const toggleComments = (productId: string) => {
     setDisplayComments((prev) => ({
@@ -67,8 +73,6 @@ export default function FriendProductCard({ product }: FriendProductProps) {
       setSellers(
         sellers.map((s) => (s.id === updatedSeller.id ? updatedSeller : s))
       );
-      // setSessionSeller(updatedSeller);
-      localStorage.setItem("loggedInSeller", JSON.stringify(updatedSeller));
     } catch (error) {
       console.error("Failed to update likes:", error);
     }
@@ -113,7 +117,7 @@ export default function FriendProductCard({ product }: FriendProductProps) {
       setSellers(
         sellers.map((s) => (s.id === updatedSeller.id ? updatedSeller : s))
       );
-      localStorage.setItem("loggedInSeller", JSON.stringify(updatedSeller));
+
       setNewComments((prev) => ({
         ...prev,
         [product.id]: "",
@@ -127,21 +131,15 @@ export default function FriendProductCard({ product }: FriendProductProps) {
     const productOwner = sellers.find(
       (seller) => seller.id === product.sellerId
     );
-
     if (!productOwner) return;
+
     const updatedReviews = [...productOwner.reviews, review];
 
     const updatedProducts = productOwner.products.map((item) =>
       item.id === product.id
         ? {
             ...product,
-            // Preserve the original fields that aren't in the form
-            id: product.id,
             state: "SOLD",
-            publicationDate: product.publicationDate,
-            comments: product.comments,
-            likes: product.likes,
-            sellerId: product.sellerId,
           }
         : item
     );
@@ -158,7 +156,7 @@ export default function FriendProductCard({ product }: FriendProductProps) {
         sellers.map((s) => (s.id === updatedSeller.id ? updatedSeller : s))
       );
     } catch (error) {
-      console.error("Failed to sent the review to the seller:", error);
+      console.error("Failed to send the review to the seller:", error);
     }
   };
 
@@ -168,8 +166,8 @@ export default function FriendProductCard({ product }: FriendProductProps) {
         isOpen={isReviewDialogOpen}
         onClose={() => setIsReviewDialogOpen(false)}
         onSubmitReview={handleReviewSubmit}
-        sellerName={ownerSeller?.name}
-      ></SellerReviewDialog>
+        sellerName={owner?.name}
+      />
       <Card key={product.id} className="flex flex-col w-72">
         <CardHeader>
           <img
@@ -192,62 +190,69 @@ export default function FriendProductCard({ product }: FriendProductProps) {
           </div>
           <p className="text-lg font-semibold">${product.price.toFixed(2)}</p>
           <p className="text-sm text-muted-foreground">{product.category}</p>
+          {owner && (
+            <p className="text-sm font-medium mt-2">
+              Seller: {owner.name + " " + owner.lastName}
+            </p>
+          )}
         </CardContent>
         <CardFooter className="flex flex-col mt-auto">
           <div className="flex justify-between items-center w-full mb-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleToggleLike(product)}
-            >
-              <Heart className="w-4 h-4 mr-2" />
-              {product.likes}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => toggleComments(product.id)}
-            >
-              <MessageCircle className="w-4 h-4 mr-2" />
-              {product.comments.length}
-            </Button>
-          </div>
-          <Dialog open={isBuyDialogOpen} onOpenChange={setIsBuyDialogOpen}>
-            <DialogTrigger asChild>
+            <div className="flex">
               <Button
-                variant="default"
-                onClick={() => setIsBuyDialogOpen(true)}
+                variant="ghost"
+                size="sm"
+                onClick={() => handleToggleLike(product)}
               >
-                Buy
+                <Heart className="w-4 h-4 mr-2" />
+                {product.likes}
               </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Confirm Purchase</DialogTitle>
-              </DialogHeader>
-              <p>Are you sure you want to buy this product?</p>
-              <DialogFooter>
-                <Button
-                  variant="secondary"
-                  onClick={() => setIsBuyDialogOpen(false)}
-                >
-                  Cancel
-                </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => toggleComments(product.id)}
+              >
+                <MessageCircle className="w-4 h-4 mr-2" />
+                {product.comments.length}
+              </Button>
+            </div>
+            <Dialog open={isBuyDialogOpen} onOpenChange={setIsBuyDialogOpen}>
+              <DialogTrigger asChild>
                 <Button
                   variant="default"
-                  onClick={() => {
-                    setIsBuyDialogOpen(false);
-                    setIsReviewDialogOpen(true);
-                  }}
+                  onClick={() => setIsBuyDialogOpen(true)}
                 >
-                  Confirm
+                  Buy
                 </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Confirm Action</DialogTitle>
+                </DialogHeader>
+                <p>Are you sure you want to buy this product?</p>
+                <DialogFooter>
+                  <Button
+                    variant="secondary"
+                    onClick={() => setIsBuyDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="default"
+                    onClick={() => {
+                      setIsBuyDialogOpen(false);
+                      setIsReviewDialogOpen(true);
+                    }}
+                  >
+                    Confirm
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
           <div
             className={`w-full transition-all duration-300 ease-in-out ${
-              displayComments[product.id] ? "h-[280px]" : "h-0"
+              displayComments[product.id] ? "h-[220px]" : "h-0"
             } overflow-hidden`}
           >
             {displayComments[product.id] && (

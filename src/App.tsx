@@ -38,8 +38,8 @@ export default function App() {
       );
       if (sellerUpdated.id === sessionSeller.id) {
         setSessionSeller(sellerUpdated);
-        return sellerUpdated;
       }
+      return sellerUpdated;
     } catch (error) {
       console.error("Error sending the request:", error);
     }

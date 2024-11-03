@@ -8,7 +8,7 @@ export default function Home() {
   return (
     <div className="flex flex-col">
       <Navbar />
-      <div className="flex flex-row justify-center w-full space-x-20 px-8">
+      <div className="flex flex-row justify-center w-full space-x-20 px-8 space-y-4">
         <ContentSection activeTab={activeTab} setActiveTab={setActiveTab} />
         <FriendSuggestions />
       </div>

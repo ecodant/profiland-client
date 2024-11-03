@@ -56,7 +56,7 @@ export default function SellerReviewDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Review {sellerName}</DialogTitle>
+          <DialogTitle>Rate {sellerName}'s service</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -64,7 +64,7 @@ export default function SellerReviewDialog({
               htmlFor="comment"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Your Review
+              Please tell us your opinion about the Seller
             </label>
             <Textarea
               id="comment"

@@ -132,7 +132,6 @@ export default function ProductFormDialog({
       }
     } catch (error) {
       console.error("Failed to update seller:", error);
-      // Here you might want to show an error message to the user
     }
   };
 
