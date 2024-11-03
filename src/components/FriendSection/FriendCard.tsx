@@ -3,7 +3,6 @@ import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { UserPlus } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { useSellers } from "@/hooks/hooks";
 
 interface FriendCardProps {
   seller: Seller;

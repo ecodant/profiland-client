@@ -1,6 +1,5 @@
 import {
   Bell,
-  FileText,
   LogOut,
   MessageSquare,
   User,
@@ -17,25 +16,24 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useSellers } from "@/hooks/hooks";
 import { SellerNotification } from "@/lib/types";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Navbar() {
   const { sessionSeller, handleUpdateSeller, sellers, setSellers } =
     useSellers();
+  const navigate = useNavigate();
 
   const handleDeleteNotification = async (notification: SellerNotification) => {
     try {
-      // Filter out the notification to be deleted
       const updatedNotifications = sessionSeller.notifications.filter(
         (n) => n.id !== notification.id
       );
 
-      // Update the session seller with the new notifications array
       const updatedSessionSeller = {
         ...sessionSeller,
         notifications: updatedNotifications,
       };
 
-      // Update the session seller in the database
       await handleUpdateSeller(updatedSessionSeller);
     } catch (error) {
       console.error("Error deleting notification:", error);
@@ -47,7 +45,6 @@ export default function Navbar() {
     notification: SellerNotification
   ) => {
     try {
-      // Find the corresponding contact request
       const contactRequest = sessionSeller.contactRequests.find(
         (request) => request.id === notification.id
       );
@@ -57,7 +54,6 @@ export default function Navbar() {
         return;
       }
 
-      // Update contact request state based on response
       const updatedContactRequests = sessionSeller.contactRequests.map(
         (request) =>
           request.id === notification.id
@@ -65,17 +61,14 @@ export default function Navbar() {
             : request
       );
 
-      // Filter out the current notification
       const updatedNotifications = sessionSeller.notifications.filter(
         (n) => n.id !== notification.id
       );
 
-      // If accepted, add sender to contacts array
       const updatedContacts = accepted
         ? [...sessionSeller.contacts, contactRequest.idEmisor]
         : sessionSeller.contacts;
 
-      // Update the session seller
       const updatedSessionSeller = {
         ...sessionSeller,
         contactRequests: updatedContactRequests,
@@ -83,7 +76,6 @@ export default function Navbar() {
         contacts: updatedContacts,
       };
 
-      // If accepted, also update the sender's contacts to include the receiver
       if (accepted) {
         const senderSeller = sellers.find(
           (seller) => seller.id === contactRequest.idEmisor
@@ -105,10 +97,8 @@ export default function Navbar() {
             ],
           };
 
-          // Update the sender in the database
           await handleUpdateSeller(updatedSenderSeller);
 
-          // Update sellers list in state
           setSellers((prevSellers) =>
             prevSellers.map((seller) =>
               seller.id === senderSeller.id ? updatedSenderSeller : seller
@@ -117,32 +107,33 @@ export default function Navbar() {
         }
       }
 
-      // Update the session seller in the database
       await handleUpdateSeller(updatedSessionSeller);
     } catch (error) {
       console.error("Error handling contact request:", error);
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("loggedInSeller");
+    window.location.reload();
+    // navigate("/auth");
+  };
+
   return (
     <nav className="bg-primary text-primary-foreground">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          <a href="/" className="flex items-center">
+          <Link to="/" className="flex items-center">
             <span className="font-bold text-xl">PROFILAND</span>
-          </a>
+          </Link>
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon" asChild>
-              <a href="/generate-report">
-                <FileText className="h-5 w-5" />
-                <span className="sr-only">Generate Report</span>
-              </a>
-            </Button>
-            <Button variant="ghost" size="icon" asChild>
-              <a href="/chats">
-                <MessageSquare className="h-5 w-5" />
-                <span className="sr-only">Chats</span>
-              </a>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/chats")}
+            >
+              <MessageSquare className="h-5 w-5" />
+              <span className="sr-only">Chats</span>
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -214,15 +205,11 @@ export default function Navbar() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem asChild>
-                  <a href="/profile">{sessionSeller.name + " profile's"}</a>
+                <DropdownMenuItem onClick={() => navigate("/profile")}>
+                  <User className="h-4 w-4 mr-2" />
+                  {sessionSeller.name + " profile's"}
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => {
-                    localStorage.removeItem("loggedInSeller");
-                    window.location.reload();
-                  }}
-                >
+                <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="h-4 w-4 mr-2" />
                   Log out
                 </DropdownMenuItem>
