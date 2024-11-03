@@ -17,6 +17,7 @@ export const ProductSchema = z.object({
   publicationDate: z.string(),
   comments: z.array(CommentSchema),
   likes: z.number(),
+  sellerId: z.string(),
 });
 
 export const productInputSchema = z.object({

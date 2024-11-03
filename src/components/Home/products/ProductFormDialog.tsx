@@ -86,6 +86,7 @@ export default function ProductFormDialog({
               publicationDate: product.publicationDate,
               comments: product.comments,
               likes: product.likes,
+              sellerId: product.sellerId,
             }
           : item
       );
@@ -97,6 +98,7 @@ export default function ProductFormDialog({
         publicationDate: new Date().toISOString(),
         comments: [],
         likes: 0,
+        sellerId: sessionSeller.id,
       };
 
       updatedProducts = [...sessionSeller.products, newProduct];

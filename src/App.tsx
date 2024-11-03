@@ -36,7 +36,7 @@ export default function App() {
         sellerToUpdate.id,
         sellerToUpdate
       );
-      if (sellerUpdated) {
+      if (sellerUpdated.id === sessionSeller.id) {
         setSessionSeller(sellerUpdated);
         return sellerUpdated;
       }

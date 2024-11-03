@@ -31,7 +31,6 @@ export default function SellerProductSection() {
         {sessionSeller.products.map((product) => (
           <SellerProductCard key={product.id} product={product} />
         ))}
-        {/* {products.map(product => ( <AvailableProductCard key={product.id} product={product} />)} */}
       </div>
     </div>
   );
