@@ -56,7 +56,8 @@ const ChatSchema = z.object({
 });
 
 const ReviewSchema = z.object({
-  authorRef: z.string(),
+  authorId: z.string(),
+  authorName: z.string(),
   comment: z.string(),
   calification: z.number().min(0).max(5),
 });

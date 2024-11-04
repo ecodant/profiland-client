@@ -12,18 +12,15 @@ import { Badge } from "../ui/badge";
 export default function Profile() {
   const [activeTab, setActiveTab] = useState("reviews");
   const { sessionSeller, sellers } = useSellers();
-
   const [reviewsGiven, setReviewsGiven] = useState<Review[]>([]);
 
   useEffect(() => {
     if (!sessionSeller || !sellers) return;
 
-    // Filter reviews given by the session seller
+    // Filter reviews given by the reviews in which the sessionSeller participes
     const givenReviews = sellers
-      // This get access each seller's reviews
-      .flatMap((seller) => seller.reviews)
-      // Filter reviews in which the sessionSeller gave before
-      .filter((review) => review.authorRef === sessionSeller.id);
+      .flatMap((seller) => seller.reviews) // Access each seller's reviews
+      .filter((review) => review.authorId === sessionSeller.id); // Filter reviews authored by session seller
 
     setReviewsGiven(givenReviews);
   }, [sellers, sessionSeller]);
@@ -58,10 +55,12 @@ export default function Profile() {
           <TabsTrigger value="contacts">Contacts</TabsTrigger>
           <TabsTrigger value="reports">Reports</TabsTrigger>
         </TabsList>
+
         <TabsContent value="reviews" className="space-y-4">
           {renderReviews(sessionSeller.reviews, "Reviews Received")}
           {renderReviews(reviewsGiven, "Reviews Given")}
         </TabsContent>
+
         <TabsContent value="products">{renderProductDashboard()}</TabsContent>
         <TabsContent value="contacts">{renderContacts()}</TabsContent>
         <TabsContent value="reports">{reportsTab()}</TabsContent>

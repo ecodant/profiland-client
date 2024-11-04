@@ -35,7 +35,8 @@ export default function SellerReviewDialog({
       return;
     }
     onSubmitReview({
-      authorRef: sessionSeller.id,
+      authorId: sessionSeller.id,
+      authorName: sessionSeller.name + " " + sessionSeller.lastName,
       comment,
       calification: rating,
     });

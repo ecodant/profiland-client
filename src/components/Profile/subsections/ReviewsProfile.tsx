@@ -33,7 +33,7 @@ export const renderReviews = (reviews: Review[], title: string) => (
             </div>
             <p className="text-sm">{review.comment}</p>
             <p className="text-xs text-gray-500 mt-1">
-              By: Seller {review.authorRef}
+              By: {review.authorName}
             </p>
           </div>
         ))}
