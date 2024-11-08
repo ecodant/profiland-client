@@ -14,9 +14,14 @@ import {
 import { dummySeller } from "./lib/localSession";
 import Navbar from "./components/Header/NavBar";
 import Profile from "./components/Profile/Profile";
+import SellerChat from "./components/Chat/SellerChat";
+
+
 // import ChatSection from "./components/Chat/ChatSection"; // Future import
 
 export default function App() {
+
+
   const [sessionSeller, setSessionSeller] = useState<Seller>(dummySeller);
   const [sellers, setSellers] = useState<Seller[]>([]);
 
@@ -150,16 +155,16 @@ export default function App() {
             />
 
             {/* Commented Chat route for future implementation */}
-            {/* <Route
+            <Route
               path="/chats"
               element={
                 sessionSeller.id === "seller1" ? (
                   <Navigate to="/auth" replace />
                 ) : (
-                  <ChatSection />
+                  <SellerChat />
                 )
               }
-            /> */}
+            />
 
             {/* Catch all route */}
             <Route path="*" element={<Navigate to="/" replace />} />

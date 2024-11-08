@@ -40,19 +40,19 @@ export const ContactSchema = z.object({
   state: z.string(),
 });
 
-const ChatMessageSchema = z.object({
-  id: z.string(),
-  senderId: z.string(),
-  receiverId: z.string(),
-  content: z.string(),
+export const ChatMessageSchema = z.object({
+  senderName: z.string(),
+  receiverName: z.string().optional(),
+  message: z.string().optional(),
   timestamp: z.string(),
+  status: z.enum(["JOIN", "MESSAGE", "LEAVE"]),
 });
 
-const ChatSchema = z.object({
+export const ChatSchema = z.object({
   chatRoomId: z.string(),
   user1Id: z.string(),
   user2Id: z.string(),
-  comments: z.array(ChatMessageSchema),
+  messages: z.array(ChatMessageSchema),
 });
 
 const ReviewSchema = z.object({
