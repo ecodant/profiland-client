@@ -6,8 +6,9 @@ This repository houses the frontend code for Profiland, a social media platform 
 
 ### **Technologies Used**
 
-- **React:**
-- **TypeScript:**
+- **React**
+- **TypeScript**
+- **Tailwind CSS**
 
 ### **Project Setup**
 

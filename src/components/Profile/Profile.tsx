@@ -44,7 +44,7 @@ export default function Profile() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div className="flex items-start">
           <Avatar className="h-20 w-20 mr-4">
-            <AvatarImage src="src/images/profile01.jpg" />
+            <AvatarImage src={sessionSeller.profileImg} />
             <AvatarFallback>
               {sessionSeller.name[0]}
               {sessionSeller.lastName[0]}
