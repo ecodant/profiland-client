@@ -7,8 +7,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Heart, MessageCircle } from "lucide-react";
-import { Product, Comment, Seller, Review } from "@/lib/types";
+import { Heart, MapPin, MessageCircle } from "lucide-react";
+import { Product, Comment, Seller, Review, SellerNotification } from "@/lib/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -24,20 +24,37 @@ import {
 } from "@/components/ui/dialog";
 import SellerReviewDialog from "../review/SellerReviewDialog";
 
+
+
 interface FriendProductProps {
   product: Product;
 }
 
+const LocationMap = ({ address }: { address: string }) => {
+  const encodedAddress = encodeURIComponent(address);
+  
+  return (
+    <div className="h-48 w-full rounded-md overflow-hidden">
+      <iframe
+        className="w-full h-full border-0"
+        loading="lazy"
+        referrerPolicy="no-referrer-when-downgrade"
+        src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_MAPS_KEY}&q=${encodedAddress}`}
+      ></iframe>
+    </div>
+  );
+};
+
 export default function FriendProductCard({ product }: FriendProductProps) {
   const [isBuyDialogOpen, setIsBuyDialogOpen] = useState(false);
+  const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false);
   const [newComments, setNewComments] = useState<{ [key: string]: string }>({});
   const [displayComments, setDisplayComments] = useState<{
     [key: string]: boolean;
   }>({});
   const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
   const [owner, setOwnerSeller] = useState<Seller | null>(null);
-  const { sessionSeller, handleUpdateSeller, setSellers, sellers } =
-    useSellers();
+  const { sessionSeller, handleUpdateSeller, setSellers, sellers } = useSellers();
 
   useEffect(() => {
     const productOwner = sellers.find(
@@ -134,6 +151,12 @@ export default function FriendProductCard({ product }: FriendProductProps) {
     if (!productOwner) return;
 
     const updatedReviews = [...productOwner.reviews, review];
+    // Create new notification for product sale
+    const newNotification: SellerNotification = {
+      id: crypto.randomUUID(),
+      message: `Your product "${product.name}" has been sold to ${sessionSeller.name}`,
+      typeOfNotification: "SALE",
+    };
 
     const updatedProducts = productOwner.products.map((item) =>
       item.id === product.id
@@ -148,6 +171,10 @@ export default function FriendProductCard({ product }: FriendProductProps) {
       ...productOwner,
       reviews: updatedReviews,
       products: updatedProducts,
+      notifications: [
+        ...(productOwner.notifications || []),
+        newNotification,
+      ],
     };
 
     try {
@@ -168,6 +195,21 @@ export default function FriendProductCard({ product }: FriendProductProps) {
         onSubmitReview={handleReviewSubmit}
         sellerName={owner?.name}
       />
+      
+      <Dialog open={isLocationDialogOpen} onOpenChange={setIsLocationDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Seller Location</DialogTitle>
+          </DialogHeader>
+          {owner?.address && <LocationMap address={owner.address} />}
+          <DialogFooter>
+            <Button variant="secondary" onClick={() => setIsLocationDialogOpen(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Card key={product.id} className="flex flex-col w-72">
         <CardHeader>
           <img
@@ -191,9 +233,18 @@ export default function FriendProductCard({ product }: FriendProductProps) {
           <p className="text-lg font-semibold">${product.price.toFixed(2)}</p>
           <p className="text-sm text-muted-foreground">{product.category}</p>
           {owner && (
-            <p className="text-sm font-medium mt-2">
-              Seller: {owner.name + " " + owner.lastName}
-            </p>
+            <div className="flex justify-between items-center mt-2">
+              <p className="text-sm font-medium">
+                Seller: {owner.name + " " + owner.lastName}
+              </p>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsLocationDialogOpen(true)}
+              >
+                <MapPin className="w-4 h-4" />
+              </Button>
+            </div>
           )}
         </CardContent>
         <CardFooter className="flex flex-col mt-auto">

@@ -6,74 +6,134 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
-import { BarChart, TrendingUp, DollarSign, Package } from "lucide-react";
+import { BarChart, CalendarIcon, Package } from "lucide-react";
+
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { getInventoryReport, getMonthlySalesReport } from "@/services/reportService";
+import { useSellers } from "@/hooks/hooks";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import { Calendar } from "@/components/ui/calendar";
 
 export const reportsTab = () => {
-  const generateReport = (reportType: string) => {
-    // This is a placeholder function. In a real application, this would trigger the report generation process.
-    console.log(`Generating ${reportType} report...`);
-    // Here you would typically make an API call to generate the report
-    alert(`${reportType} report generated successfully!`);
+  const [isLoading, setIsLoading] = useState({
+    sales: false,
+    inventory: false,
+  });
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const { toast } = useToast();
+  const { sessionSeller } = useSellers();
+
+  const generateSalesReport = async () => {
+    setIsLoading(prev => ({ ...prev, sales: true }));
+    try {
+      await getMonthlySalesReport({
+        sellerId: sessionSeller.id, // Replace with actual seller ID
+        year: selectedDate.getFullYear(),
+        month: selectedDate.getMonth() + 1,
+      });
+      
+      toast({
+        title: "Success",
+        description: "Sales report downloaded successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to generate sales report",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(prev => ({ ...prev, sales: false }));
+    }
+  };
+
+  const generateInventoryReport = async () => {
+    setIsLoading(prev => ({ ...prev, inventory: true }));
+    try {
+      await getInventoryReport();
+      toast({
+        title: "Success",
+        description: "Inventory report downloaded successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to generate inventory report",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(prev => ({ ...prev, inventory: false }));
+    }
   };
 
   return (
     <div className="grid gap-4 md:grid-cols-2">
       <Card>
         <CardHeader>
-          <CardTitle>Sales Avarage Report</CardTitle>
-          <CardDescription>Generate a report of your sales</CardDescription>
+          <CardTitle>Sales Report</CardTitle>
+          <CardDescription>Generate a monthly sales report</CardDescription>
         </CardHeader>
-        <CardContent>
-          <Button onClick={() => generateReport("Sales")} className="w-full">
-            <BarChart className="mr-2 h-4 w-4" /> Generate Sales Report
+        <CardContent className="space-y-4">
+          <div className="flex flex-col space-y-2">
+            <label className="text-sm font-medium">Select Month</label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "justify-start text-left font-normal w-full",
+                    !selectedDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {selectedDate ? (
+                    format(selectedDate, "MMMM yyyy")
+                  ) : (
+                    <span>Pick a month</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={(date) => setSelectedDate(date || new Date())}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          
+          <Button 
+            onClick={generateSalesReport} 
+            className="w-full"
+            disabled={isLoading.sales}
+          >
+            <BarChart className="mr-2 h-4 w-4" />
+            {isLoading.sales ? "Generating..." : "Generate Sales Report"}
           </Button>
         </CardContent>
       </Card>
+
       <Card>
         <CardHeader>
-          <CardTitle>Network Repor</CardTitle>
+          <CardTitle>Inventory Report</CardTitle>
           <CardDescription>
-            AGenerate a report of your contacts and their products
+            This one generates a general reports of the sellers in the system
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Button
-            onClick={() => generateReport("Performance")}
+            onClick={generateInventoryReport}
             className="w-full"
+            disabled={isLoading.inventory}
           >
-            <TrendingUp className="mr-2 h-4 w-4" /> Generate Performance Report
-          </Button>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            Generate a report of Contacts who bought some of your products
-          </CardTitle>
-          <CardDescription>Who are really you best contacts</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button
-            onClick={() => generateReport("Financial")}
-            className="w-full"
-          >
-            <DollarSign className="mr-2 h-4 w-4" /> Generate Financial Report
-          </Button>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>Another Report</CardTitle>
-          <CardDescription>
-            Check thing that may you interest in
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button
-            onClick={() => generateReport("Inventory")}
-            className="w-full"
-          >
-            <Package className="mr-2 h-4 w-4" /> Generate Inventory Report
+            <Package className="mr-2 h-4 w-4" />
+            {isLoading.inventory ? "Generating..." : "Generate Inventory Report"}
           </Button>
         </CardContent>
       </Card>

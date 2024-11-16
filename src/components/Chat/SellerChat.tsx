@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { over, Client } from 'stompjs';
 import SockJS from 'sockjs-client';
 import { ChatMessage } from '@/lib/types';
 import { useSellers } from '@/hooks/hooks';
+import { getAllMessages } from '@/services/chatMessagesService';
 
 interface UserData {
   username: string;
@@ -25,10 +26,48 @@ export default function SellerChat() {
     message: ''
   });
 
+  const fetchHistoryMessages = useCallback(async () => {
+    try {
+      // Fetch the messages from the server
+      const fetchedMessages: ChatMessage[] = await getAllMessages();
+  
+      // Organize messages into the privateChats Map
+      const chatMap = new Map<string, ChatMessage[]>();
+  
+      fetchedMessages.forEach((message) => {
+        // Determine the chat participant: the other user in a private chat
+        let chatParticipant = message.senderName === sessionSeller.name
+          ? message.receiverName
+          : message.senderName;
+  
+        // If chatParticipant is null or the message is public, skip
+        if (!chatParticipant) return;
+  
+        // Initialize the message list for this chat participant if not already present
+        if (!chatMap.has(chatParticipant)) {
+          chatMap.set(chatParticipant, []);
+        }
+  
+        // Append the current message to the correct chat participant's list
+        chatMap.get(chatParticipant)?.push(message);
+      });
+      console.log(chatMap)
+      // Update the privateChats state
+      setPrivateChats(chatMap);
+    } catch (error) {
+      console.error("Failed to fetch messages:", error);
+    }
+  }, [sessionSeller.name]);
+  
   useEffect(() => {
-    connect();
-  }, []); // Only run on mount
-
+    const initializeConnection = async () => {
+      connect();
+      await fetchHistoryMessages(); // Correctly await the function
+    };
+    
+    initializeConnection();
+  }, [fetchHistoryMessages]); // Include fetchHistoryMessages as a dependency
+  
   const connect = (): void => {
     let Sock = new SockJS('http://192.168.1.35:8080/ws');
     stompClient = over(Sock);
@@ -52,16 +91,19 @@ export default function SellerChat() {
       status: "JOIN"
     };
     if (stompClient) {
+      // Send the join message to the public chatroom
       stompClient.send("/app/message", {}, JSON.stringify(chatMessage));
     }
   };
+  
 
   const onMessageReceived = (payload: { body: string }): void => {
     const payloadData: ChatMessage = JSON.parse(payload.body);
-    
-    switch(payloadData.status) {
+  
+    switch (payloadData.status) {
       case "JOIN":
-        if(!privateChats.get(payloadData.senderName)) {
+        // Check if the user is already in the privateChats Map
+        if (!privateChats.get(payloadData.senderName)) {
           privateChats.set(payloadData.senderName, []);
           setPrivateChats(new Map(privateChats));
         }
@@ -71,6 +113,7 @@ export default function SellerChat() {
         break;
     }
   };
+  
 
   const onPrivateMessage = (payload: { body: string }): void => {
     const payloadData: ChatMessage = JSON.parse(payload.body);
@@ -144,7 +187,7 @@ export default function SellerChat() {
               <div 
                 onClick={() => setTab("CHATROOM")} 
                 className={`p-3 cursor-pointer hover:bg-gray-100 transition-colors ${
-                  tab === "CHATROOM" ? "bg-blue-50 border-l-4 border-blue-500" : ""
+                  tab === "CHATROOM" ? "bg-blue-50 border-l-4 border-primary" : ""
                 }`}
               >
                 <span className="font-medium text-gray-800">Public Chat</span>
@@ -154,7 +197,7 @@ export default function SellerChat() {
                   key={index}
                   onClick={() => setTab(name)} 
                   className={`p-3 cursor-pointer hover:bg-gray-100 transition-colors ${
-                    tab === name ? "bg-blue-50 border-l-4 border-blue-500" : ""
+                    tab === name ? "bg-blue-50 border-l-4 border-primary" : ""
                   }`}
                 >
                   <span className="font-medium text-gray-800">{name}</span>
@@ -188,7 +231,7 @@ export default function SellerChat() {
                     <div
                       className={`rounded-lg p-3 ${
                         chat.senderName === sessionSeller.name
-                          ? 'bg-blue-500 text-white'
+                          ? 'bg-primary text-white'
                           : 'bg-gray-100 text-gray-800'
                       }`}
                     >
@@ -208,11 +251,11 @@ export default function SellerChat() {
                   onChange={handleMessage}
                   onKeyPress={handleKeyPress}
                   placeholder="Type your message..."
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
                 <button
                   onClick={tab === "CHATROOM" ? sendValue : sendPrivateValue}
-                  className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-slate-900 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-primary focus:ring-offset-2"
                 >
                   Send
                 </button>

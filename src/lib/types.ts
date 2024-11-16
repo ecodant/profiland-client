@@ -78,19 +78,17 @@ export const SellerSchema = z.object({
   id: z.string(),
   name: z.string().nonempty(),
   email: z.string().email(),
-  password: z.string().min(8),
+  password: z.string().min(6),
   lastName: z.string().nonempty(),
   license: z.string().optional(),
   address: z.string().optional(),
   profileImg: z.string().optional(),
 
-  // Sets from Java can be modeled as arrays in TypeScript
   reviews: z.array(ReviewSchema),
   contacts: z.array(z.string()).optional().default([]),
   notifications: z.array(SellerNotificationSchema),
   products: z.array(ProductSchema),
-  // stats: z.array(z.string()).optional().default([]),
-  chats: z.array(ChatSchema),
+  //chats: z.array(ChatSchema),
   contactRequests: z.array(ContactSchema),
 });
 

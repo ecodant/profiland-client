@@ -31,10 +31,10 @@ import { useToast } from "@/hooks/use-toast";
 import { registerSeller } from "@/services/sellerService";
 import { AxiosError } from "axios";
 import { useSellers } from "@/hooks/hooks";
+import { ChefHat } from "lucide-react";
+import { dummySellers } from "./dummySeller";
 
-// interface AuthPageProps {
 
-// }
 export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -61,7 +61,7 @@ export default function AuthPage() {
       address: "",
       license: "Seller",
     },
-    mode: "onSubmit", // Only validate on form submission
+    mode: "onSubmit", 
   });
 
   const onLoginSubmit = async (data: LoginFormValues) => {
@@ -82,6 +82,21 @@ export default function AuthPage() {
     }
   };
 
+  const registerDummys = async () => {
+
+    try {
+      setIsLoading(true);
+        await registerSeller(dummySellers[0], "dat");
+        await registerSeller(dummySellers[1], "xml");
+        await registerSeller(dummySellers[2], "xml");
+      
+    } catch (error) {
+      console.log("Something went wrong");
+    }finally {
+      setIsLoading(false);
+    }
+      
+  }
   const onSignUpSubmit = async (data: SignUpFormValues) => {
     if (data.password !== data.confirmPassword) {
       toast({
@@ -108,10 +123,9 @@ export default function AuthPage() {
           contacts: [data.personalId],
           notifications: [],
           products: [],
-          chats: [],
           contactRequests: [],
         },
-        "xml"
+        "dat"
       );
 
       if (newSeller) {
@@ -161,6 +175,7 @@ export default function AuthPage() {
 
   return (
     <div className="flex justify-center items-center mx-auto py-56">
+      <Button className="absolute top-4 left-4" onClick={registerDummys}><ChefHat /></Button>
       <Tabs defaultValue="login" className="w-full max-w-md mx-auto">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="login">Login</TabsTrigger>
