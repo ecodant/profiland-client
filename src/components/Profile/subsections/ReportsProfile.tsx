@@ -6,17 +6,12 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
-import { BarChart, CalendarIcon, Package } from "lucide-react";
-
+import { BarChart, Package } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { getInventoryReport, getMonthlySalesReport } from "@/services/reportService";
 import { useSellers } from "@/hooks/hooks";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
-import { Calendar } from "@/components/ui/calendar";
+import MonthPicker from "./MonthPicker"; // Adjust the import path as needed
 
 export const reportsTab = () => {
   const [isLoading, setIsLoading] = useState({
@@ -31,7 +26,7 @@ export const reportsTab = () => {
     setIsLoading(prev => ({ ...prev, sales: true }));
     try {
       await getMonthlySalesReport({
-        sellerId: sessionSeller.id, // Replace with actual seller ID
+        sellerId: sessionSeller.id,
         year: selectedDate.getFullYear(),
         month: selectedDate.getMonth() + 1,
       });
@@ -80,32 +75,10 @@ export const reportsTab = () => {
         <CardContent className="space-y-4">
           <div className="flex flex-col space-y-2">
             <label className="text-sm font-medium">Select Month</label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "justify-start text-left font-normal w-full",
-                    !selectedDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {selectedDate ? (
-                    format(selectedDate, "MMMM yyyy")
-                  ) : (
-                    <span>Pick a month</span>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={(date) => setSelectedDate(date || new Date())}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
+            <MonthPicker
+              selectedDate={selectedDate}
+              onChange={setSelectedDate}
+            />
           </div>
           
           <Button 

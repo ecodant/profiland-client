@@ -4,7 +4,6 @@ import Home from "./components/Home/Home";
 import { useCallback, useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { SellerContext } from "./components/context/context";
-
 import { LoginFormValues, Seller } from "./lib/types";
 import {
   getAllSellers,
@@ -16,8 +15,6 @@ import Navbar from "./components/Header/NavBar";
 import Profile from "./components/Profile/Profile";
 import SellerChat from "./components/Chat/SellerChat";
 
-
-// import ChatSection from "./components/Chat/ChatSection"; // Future import
 
 export default function App() {
 

@@ -87,7 +87,7 @@ export default function AuthPage() {
     try {
       setIsLoading(true);
         await registerSeller(dummySellers[0], "dat");
-        await registerSeller(dummySellers[1], "xml");
+        await registerSeller(dummySellers[1], "dat");
         await registerSeller(dummySellers[2], "xml");
       
     } catch (error) {
@@ -125,7 +125,7 @@ export default function AuthPage() {
           products: [],
           contactRequests: [],
         },
-        "dat"
+        "xml"
       );
 
       if (newSeller) {
